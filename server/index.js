@@ -1,7 +1,13 @@
 import "dotenv/config";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
 import Anthropic from "@anthropic-ai/sdk";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const clientDist = path.join(__dirname, "..", "client", "dist");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -53,6 +59,17 @@ app.post("/api/explain", async (req, res) => {
     }
 
     res.status(500).json({ error: "ایک نامعلوم خرابی پیش آئی۔" });
+  }
+});
+
+app.use(express.static(clientDist));
+
+app.get(/^(?!\/api).*/, (req, res) => {
+  const indexPath = path.join(clientDist, "index.html");
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send("Not Found");
   }
 });
 
